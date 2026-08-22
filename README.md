@@ -2,6 +2,18 @@
 
 Install a project's shell script as a command in `~/.local/bin`.
 
+## Installation
+
+Clone the repository and run the installer:
+
+```bash
+git clone <repository-url>
+cd install-shim
+./install-shim.sh
+```
+
+This installs `install-shim` to `~/.local/bin`. Make sure `~/.local/bin` is included in your `PATH`.
+
 ## Usage
 
 ```bash
