@@ -101,6 +101,13 @@ SHIM_PATH="$INSTALL_DIR/$COMMAND_NAME"
 
 mkdir -p "$INSTALL_DIR"
 
+if [[ -e "$SHIM_PATH" ]]; then
+    read -r -p "$SHIM_PATH already exists. Overwrite? [y/N] " response
+
+    [[ "$response" =~ ^[Yy]$ ]] ||
+        exit 0
+fi
+
 cat > "$SHIM_PATH" <<EOF
 #!/usr/bin/env bash
 
