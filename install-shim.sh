@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+
+
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
 PROJECT_NAME="$(basename "$SCRIPT_DIR")"
@@ -9,6 +14,10 @@ SCRIPT_PATH="$SCRIPT_DIR/$PROJECT_NAME.sh"
 
 INSTALL_DIR="$HOME/.local/bin"
 SHIM_PATH="$INSTALL_DIR/$PROJECT_NAME"
+
+# ---------------------------------------------------------------------------
+# Preconditions
+# ---------------------------------------------------------------------------
 
 [[ -f "$SCRIPT_PATH" ]] ||
     {
@@ -21,6 +30,10 @@ SHIM_PATH="$INSTALL_DIR/$PROJECT_NAME"
         echo "Error: $SCRIPT_PATH is not executable" >&2
         exit 1
     }
+
+# ---------------------------------------------------------------------------
+# Install shim
+# ---------------------------------------------------------------------------
 
 mkdir -p "$INSTALL_DIR"
 
