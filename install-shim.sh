@@ -16,6 +16,28 @@ INSTALL_DIR="$HOME/.local/bin"
 SHIM_PATH="$INSTALL_DIR/$PROJECT_NAME"
 
 # ---------------------------------------------------------------------------
+# Arguments
+# ---------------------------------------------------------------------------
+
+show_help() {
+    cat <<EOF
+Usage: install-shim
+
+Install the current project's shell script as a command in ~/.local/bin.
+
+Options:
+  -h, --help    Show this help message.
+EOF
+}
+
+case "${1:-}" in
+    -h|--help)
+        show_help
+        exit 0
+        ;;
+esac
+
+# ---------------------------------------------------------------------------
 # Preconditions
 # ---------------------------------------------------------------------------
 
