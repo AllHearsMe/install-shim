@@ -14,7 +14,7 @@ INSTALL_DIR="$HOME/.local/bin"
 
 show_help() {
     cat <<EOF
-Usage: install-shim [path]
+Usage: install-shim [options] [path]
 
 Install a shell script as a command in ~/.local/bin.
 
@@ -23,14 +23,19 @@ If path is a file, its name is used as the command name.
 If path is a directory, <directory-name>.sh is used as the entry script.
 
 Options:
+  -f, --force   Overwrite an existing command shim.
   -h, --help    Show this help message.
 EOF
 }
 
+FORCE=false
 TARGET="."
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        -f|--force)
+            FORCE=true
+            ;;
         -h|--help)
             show_help
             exit 0
@@ -101,11 +106,10 @@ SHIM_PATH="$INSTALL_DIR/$COMMAND_NAME"
 
 mkdir -p "$INSTALL_DIR"
 
-if [[ -e "$SHIM_PATH" ]]; then
-    read -r -p "$SHIM_PATH already exists. Overwrite? [y/N] " response
-
-    [[ "$response" =~ ^[Yy]$ ]] ||
-        exit 0
+if [[ -e "$SHIM_PATH" && "$FORCE" != true ]]; then
+    echo "Error: $SHIM_PATH already exists." >&2
+    echo "Use --force to overwrite it." >&2
+    exit 1
 fi
 
 cat > "$SHIM_PATH" <<EOF
