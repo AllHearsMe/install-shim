@@ -85,3 +85,7 @@ The target script must exist and be executable.
 ### TODO
 
 - [ ] Test rejection of a non-executable target script on a Unix-like filesystem.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
