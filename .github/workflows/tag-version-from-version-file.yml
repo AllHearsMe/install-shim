@@ -1,0 +1,65 @@
+name: Tag Version
+
+# Companion to a release.yml that triggers on tags matching v[0-9]+.[0-9]+.[0-9]+.
+# This workflow is the *other end*: whenever the VERSION file changes on main,
+# it creates and pushes the matching tag, which then fires that release
+# workflow. VERSION stays the single source of truth for the version; this
+# workflow only ever derives a tag from it, never writes back to the file.
+#
+# Portable as-is across any project that keeps a plain VERSION file, as long as:
+#   - the default/release branch is "main" (adjust below if not)
+#   - VERSION contains nothing but the version string (e.g. "0.1.2"), with
+#     optional surrounding whitespace/newline
+#   - the release workflow's tag pattern is exactly "v" + that version
+#
+# If the version instead lives in pyproject.toml, package.json, Cargo.toml,
+# etc., keep the check/tag steps and swap the "Read version" step for
+# whatever parses that file, and name the workflow file after that source,
+# e.g. tag-version-from-pyproject.yml.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - VERSION
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Need tag history to check whether this version was already tagged.
+          fetch-depth: 0
+
+      - name: Read version from VERSION
+        id: version
+        run: |
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+          if [[ -z "$VERSION" ]]; then
+            echo "VERSION file is empty" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether this version is already tagged
+        id: check
+        run: |
+          if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create and push tag
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
