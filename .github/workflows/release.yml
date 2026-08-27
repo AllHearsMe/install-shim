@@ -1,20 +1,58 @@
 name: Release
 
+# Triggered by the "Tag Version" workflow finishing, not by a tag push directly.
+# GitHub suppresses push-triggered workflow runs when the push came from the
+# default GITHUB_TOKEN — which is how Tag Version pushes its tags — so a plain
+# `on: push: tags:` trigger here would silently never fire for auto-created tags.
+# workflow_run isn't subject to that restriction, since it keys off the
+# *workflow* completing rather than the push event itself.
+#
+# Coupling note: `workflows:` below must match Tag Version's `name:` field
+# exactly. If that workflow is ever renamed, update this list to match, or
+# this trigger goes quietly dead — no error, it just never fires again.
 on:
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_run:
+    workflows: ["Tag Version"]
+    types: [completed]
 
 permissions:
   contents: write
 
 jobs:
   release:
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
-      - name: Create GitHub Release
+      - name: Read version from pyproject.toml
+        id: version
+        run: |
+          VERSION="$(grep -m1 '^version = ' pyproject.toml | sed -E 's/^version = "(.*)"$/\1/')"
+          if [[ -z "$VERSION" ]]; then
+            echo "Could not find a 'version = \"X.Y.Z\"' line under [project] in pyproject.toml" >&2
+            exit 1
+          fi
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      # workflow_run fires on every Tag Version completion, including no-op runs
+      # (e.g. pyproject.toml touched without the version actually changing). This
+      # keeps a rerun safe instead of failing loudly on "release already exists".
+      - name: Skip if a release for this tag already exists
+        id: check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "${{ github.ref_name }}" --generate-notes
+        run: |
+          if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "${{ steps.version.outputs.tag }}" --generate-notes

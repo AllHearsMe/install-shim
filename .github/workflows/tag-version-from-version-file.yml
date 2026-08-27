@@ -1,16 +1,25 @@
 name: Tag Version
 
-# Companion to a release.yml that triggers on tags matching v[0-9]+.[0-9]+.[0-9]+.
-# This workflow is the *other end*: whenever the VERSION file changes on main,
-# it creates and pushes the matching tag, which then fires that release
-# workflow. VERSION stays the single source of truth for the version; this
-# workflow only ever derives a tag from it, never writes back to the file.
+# Companion to a release.yml triggered by this workflow completing (via
+# workflow_run), not by a tag push directly — GitHub suppresses workflow runs
+# triggered by pushes made with the default GITHUB_TOKEN, which is what this
+# workflow's tag push uses below, so a plain `on: push: tags:` trigger on
+# release.yml would silently never fire for these auto-created tags. See
+# release.yml's own header comment for the full reasoning.
+#
+
+# Whenever the VERSION file changes on main, this workflow creates and
+# pushes the matching tag. VERSION stays the single source of truth for
+# the version; this workflow only ever derives a tag from it, never writes back
+# to the file.
 #
 # Portable as-is across any project that keeps a plain VERSION file, as long as:
 #   - the default/release branch is "main" (adjust below if not)
 #   - VERSION contains nothing but the version string (e.g. "0.1.2"), with
 #     optional surrounding whitespace/newline
 #   - the release workflow's tag pattern is exactly "v" + that version
+#   - release.yml's `workflows:` list is kept in sync with this workflow's
+#     `name:` above (see this workflow's coupling note in release.yml)
 #
 # If the version instead lives in pyproject.toml, package.json, Cargo.toml,
 # etc., keep the check/tag steps and swap the "Read version" step for
