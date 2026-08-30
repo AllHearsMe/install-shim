@@ -27,18 +27,18 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
-      - name: Read version from pyproject.toml
+      - name: Read version from VERSION
         id: version
         run: |
-          VERSION="$(grep -m1 '^version = ' pyproject.toml | sed -E 's/^version = "(.*)"$/\1/')"
+          VERSION="$(tr -d '[:space:]' < VERSION)"
           if [[ -z "$VERSION" ]]; then
-            echo "Could not find a 'version = \"X.Y.Z\"' line under [project] in pyproject.toml" >&2
+            echo "VERSION file is empty" >&2
             exit 1
           fi
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
       # workflow_run fires on every Tag Version completion, including no-op runs
-      # (e.g. pyproject.toml touched without the version actually changing). This
+      # (e.g. VERSION touched without the version actually changing). This
       # keeps a rerun safe instead of failing loudly on "release already exists".
       - name: Skip if a release for this tag already exists
         id: check

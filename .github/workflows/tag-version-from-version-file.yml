@@ -7,15 +7,15 @@ name: Tag Version
 # release.yml would silently never fire for these auto-created tags. See
 # release.yml's own header comment for the full reasoning.
 #
-
 # Whenever the VERSION file changes on main, this workflow creates and
 # pushes the matching tag. VERSION stays the single source of truth for
-# the version; this workflow only ever derives a tag from it, never writes back
-# to the file.
+# the version; this workflow only ever derives a tag from it, never writes
+# back to the file.
 #
-# Portable as-is across any project that keeps a plain VERSION file, as long as:
+# Portable as-is across any project that keeps a plain VERSION file, as long
+# as:
 #   - the default/release branch is "main" (adjust below if not)
-#   - VERSION contains nothing but the version string (e.g. "0.1.2"), with
+#   - VERSION contains nothing but the version string (e.g. "0.1.0"), with
 #     optional surrounding whitespace/newline
 #   - the release workflow's tag pattern is exactly "v" + that version
 #   - release.yml's `workflows:` list is kept in sync with this workflow's
