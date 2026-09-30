@@ -1,0 +1,4 @@
+# Every text file is stored and checked out with LF line endings, on every machine.
+# Without this, Git on Windows (core.autocrlf=true) can commit or check out whole files with CRLF, so each such commit shows as a full rewrite and conflicts with every branch editing the same file.
+# text=auto leaves binary files alone; eol=lf also checks files out with LF, so a tool that keeps a file's existing endings keeps LF.
+* text=auto eol=lf
