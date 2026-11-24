@@ -1,0 +1,6 @@
+# bookkeep: keeps the project's bookkeeping, a repo of its own, out of the project's commits
+/.bookkeep
+# bookkeep: keeps the import of bookkeep's instructions out of the project's commits
+/CLAUDE.local.md
+# bookkeep: names the hooks' file for each worktree Claude Code makes; track it instead if you like
+/.worktreeinclude
